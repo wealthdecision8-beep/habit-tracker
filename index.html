@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HabitForge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f; --surface: #13131a; --card: #1a1a25; --border: #2a2a3a;
+      --accent: #c8f135; --accent2: #6e5ff6; --text: #f0f0f5; --muted: #7070a0;
+      --danger: #ff4f6e; --streak: #ffb830;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: linear-gradient(rgba(110,95,246,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(110,95,246,0.04) 1px, transparent 1px);
+      background-size: 40px 40px; pointer-events: none; z-index: 0;
+    }
+    .container { max-width: 720px; margin: 0 auto; padding: 48px 24px; position: relative; z-index: 1; }
+    .header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 48px; gap: 16px; flex-wrap: wrap; }
+    .brand-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 64px; line-height: 1; letter-spacing: 2px;
+      background: linear-gradient(135deg, #c8f135 0%, #8bffaa 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .brand-sub { font-size: 13px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; }
+    .today-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 8px 18px; font-size: 13px; color: var(--muted); font-weight: 500; }
+    .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 36px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; }
+    .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 42px; line-height: 1; color: var(--accent); }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-top: 4px; font-weight: 500; }
+    .add-form { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; margin-bottom: 32px; }
+    .add-form h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 16px; font-weight: 600; }
+    .form-row { display: flex; gap: 10px; }
+    .emoji-input { width: 56px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 22px; text-align: center; outline: none; flex-shrink: 0; height: 52px; }
+    .name-input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 15px; padding: 0 16px; font-family: 'DM Sans', sans-serif; outline: none; height: 52px; }
+    .name-input::placeholder { color: var(--muted); }
+    .add-btn { background: var(--accent); color: #0a0a0f; border: none; border-radius: 12px; padding: 0 24px; height: 52px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; cursor: pointer; flex-shrink: 0; }
+    .section-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 600; margin-bottom: 14px; }
+    .habits-list { display: flex; flex-direction: column; gap: 10px; }
+    .habit-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; animation: slideIn 0.3s ease both; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .habit-card.done { border-color: rgba(200,241,53,0.3); background: rgba(200,241,53,0.05); }
+    .habit-emoji { font-size: 28px; width: 44px; text-align: center; flex-shrink: 0; }
+    .habit-info { flex: 1; min-width: 0; }
+    .habit-name { font-size: 16px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .habit-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .streak-badge { color: var(--streak); font-weight: 600; }
+    .check-form button { width: 44px; height: 44px; border-radius: 12px; border: 2px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .habit-card.done .check-form button { background: var(--accent); border-color: var(--accent); }
+    .check-icon { width: 20px; height: 20px; stroke: var(--muted); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .habit-card.done .check-icon { stroke: #0a0a0f; }
+    .delete-form button { width: 36px; height: 36px; border-radius: 10px; border: 1px solid transparent; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .delete-form button:hover { border-color: var(--danger); background: rgba(255,79,110,0.1); }
+    .del-icon { width: 16px; height: 16px; stroke: var(--danger); fill: none; stroke-width: 2; stroke-linecap: round; }
+    .empty { text-align: center; padding: 60px 24px; color: var(--muted); }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty h3 { font-size: 18px; color: var(--text); margin-bottom: 6px; font-weight: 500; }
+    .progress-track { width: 100%; height: 3px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <div class="brand-title">HabitForge</div>
+        <div class="brand-sub">Build your discipline daily</div>
+      </div>
+      <div class="today-pill">📅 {{ today }}</div>
+    </div>
+
+    {% set total = habits | length %}
+    {% set done_today = namespace(count=0) %}
+    {% for h in habits %}
+      {% if today in h.completions %}
+        {% set done_today.count = done_today.count + 1 %}
+      {% endif %}
+    {% endfor %}
+
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-value">{{ total }}</div>
+        <div class="stat-label">Habits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ done_today.count }}</div>
+        <div class="stat-label">Done Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{% if total > 0 %}{{ ((done_today.count / total) * 100) | int }}%{% else %}—{% endif %}</div>
+        <div class="stat-label">Today's Rate</div>
+      </div>
+    </div>
+
+    <div class="add-form">
+      <h2>+ New Habit</h2>
+      <form action="/add" method="POST">
+        <div class="form-row">
+          <input class="emoji-input" type="text" name="emoji" value="✅" maxlength="2" />
+          <input class="name-input" type="text" name="name" placeholder="e.g. Drink 2L of water..." required />
+          <button type="submit" class="add-btn">ADD</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="section-label">Today's Habits</div>
+    <div class="habits-list">
+      {% if habits %}
+        {% for habit in habits %}
+          {% set done = today in habit.completions %}
+          <div class="habit-card {% if done %}done{% endif %}">
+            <div class="habit-emoji">{{ habit.emoji }}</div>
+            <div class="habit-info">
+              <div class="habit-name">{{ habit.name }}</div>
+              <div class="habit-meta">
+                <span class="streak-badge">🔥 {{ habit.completions | length }} total</span>
+                &nbsp;·&nbsp;{% if done %}Done today ✓{% else %}Not done yet{% endif %}
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: {{ [habit.completions | length * 10, 100] | min }}%"></div>
+              </div>
+            </div>
+            <form class="check-form" action="/toggle" method="POST">
+              <input type="hidden" name="habit_id" value="{{ habit.id }}" />
+              <button type="submit">
+                <svg class="check-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+            </form>
+            <form class="delete-form" action="/delete" method="POST" onsubmit="return confirm('Delete this habit?')">
+              <input type="hidden" name="habit_id" value="{{ habit.id }}" />
+              <button type="submit">
+                <svg class="del-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </form>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty">
+          <div class="empty-icon">🌱</div>
+          <h3>No habits yet</h3>
+          <p>Add your first habit above to start building your streak.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
